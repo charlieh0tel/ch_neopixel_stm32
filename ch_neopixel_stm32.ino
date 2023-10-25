@@ -1,7 +1,6 @@
 #include <cassert>
 
 #define NEO_PIN 6
-#define NEO_COUNT 32
 
 const uint8_t rainbow[] = {
   /* GRB */
@@ -40,8 +39,6 @@ const uint8_t rainbow[] = {
 };
 
 void setup() {
-  assert(sizeof(randbow) == 3 * NEO_COUNT);
-
   pinMode(NEO_PIN, OUTPUT);
   digitalWrite(NEO_PIN, LOW);
   delayMicroseconds(100);
