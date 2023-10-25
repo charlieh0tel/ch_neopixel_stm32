@@ -1,5 +1,3 @@
-#include <cassert>
-
 #define NEO_PIN 6
 
 const uint8_t rainbow[] = {
