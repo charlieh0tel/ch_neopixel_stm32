@@ -1,4 +1,22 @@
 #define NEO_PIN 6
+#define NEO_NLEDS 32
+#define NEO_400KHZ
+
+#ifdef NEO_400KHZ
+#define NEO_BIT_TIME 2.5e-6
+#define NEO_T0H_TIME 0.5e-6
+#define NEO_T1H_TIME 1.2e-6
+#endif
+
+#ifdef NEO_800KHZ
+#define NEO_BIT_TIME 1.25e-6
+#define NEO_T0H_TIME 0.4e-6
+#define NEO_T1H_TIME 0.8e-6
+#endif
+
+#if !defined(NEO_BIT_TIME) || !defined(NEO_T0H_TIME) || !defined(NEO_T1H_TIME)
+#error "neo bit times not set"
+#endif
 
 const uint8_t rainbow[] = {
   /* GRB */
@@ -46,18 +64,16 @@ void loop() {
   auto gpioPort = digitalPinToPort(NEO_PIN);
   auto gpioPin = STM_LL_GPIO_PIN(digitalPinToPinName(NEO_PIN));
 
-  uint32_t cycles_per_bit = (uint32_t) (F_CPU * 2.5e-6);
-  uint32_t cycles_t0h = (uint32_t) (F_CPU * 0.5e-6);
-  uint32_t cycles_t1h = (uint32_t) (F_CPU * 1.2e-6);
+  uint32_t cycles_per_bit = (uint32_t) (F_CPU * NEO_BIT_TIME);
+  uint32_t cycles_t0h = (uint32_t) (F_CPU * NEO_T0H_TIME);
+  uint32_t cycles_t1h = (uint32_t) (F_CPU * NEO_T1H_TIME);
   uint32_t t0h_midbit_count = cycles_per_bit - cycles_t0h;
   uint32_t t1h_midbit_count = cycles_per_bit - cycles_t1h;
 
-  int i = 0;
-  const uint8_t *p = rainbow;
   SysTick->LOAD = cycles_per_bit - 1;
   SysTick->VAL = 0;
-  for (; i < sizeof(rainbow); i++, p++) {
-    uint8_t bits = *p;
+  for (int i = 0; i < NEO_NLEDS * 3; i++) {
+    uint8_t bits = rainbow[i % sizeof rainbow];
     for (uint8_t mask = 0x80; mask; mask >>= 1) {
       LL_GPIO_SetOutputPin(gpioPort, gpioPin);
       uint32_t midbit_count = (bits & mask) ? t1h_midbit_count : t0h_midbit_count;
